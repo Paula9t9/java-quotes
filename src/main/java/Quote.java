@@ -24,7 +24,9 @@ public class Quote {
 
             quotes = gson.fromJson(bufferedReader, Quote[].class);
 
-            return quotes[0].toString();
+            int randomIndex = (int) (Math.random() * quotes.length);
+
+            return quotes[randomIndex].toString();
 
 
         } catch (FileNotFoundException e) {

@@ -1,3 +1,5 @@
+package quotes;
+
 import com.google.gson.Gson;
 import com.sun.javafx.binding.StringFormatter;
 

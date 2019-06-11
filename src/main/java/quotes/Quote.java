@@ -2,7 +2,9 @@ package quotes;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.stream.MalformedJsonException;
 import com.sun.javafx.binding.StringFormatter;
+import com.sun.org.apache.xpath.internal.operations.Quo;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -49,7 +51,10 @@ public class Quote {
 
         Gson gson = new Gson();
         Quote newQuote = gson.fromJson(internetReader, Quote.class);
+        connection.disconnect();
+
         // store sw quote in text for easier access later
+        // TODO: split author off end of starwars quote and save it
         newQuote.text = newQuote.starWarsQuote;
         saveQuote("src/main/resources/recentquotes.json", newQuote);
 
@@ -67,9 +72,13 @@ public class Quote {
     public void saveQuote(String filepath, Quote newQuote){
 
         try {
+            deserializeJsonFile();
+            quotes.add(newQuote);
             // TODO: Should check if quote is already in the file
             Gson gson = new Gson();
-            gson.toJson(newQuote, new FileWriter(filepath));
+            FileWriter fileWriter = new FileWriter(filepath);
+            gson.toJson(quotes, fileWriter);
+            fileWriter.close();
         } catch (IOException e) {
             System.out.println("Error saving new quote to file");
             e.printStackTrace();
@@ -79,11 +88,14 @@ public class Quote {
     // Stores quotes from file into quotes list
     // Used List trick from https://futurestud.io/tutorials/gson-mapping-of-arrays-and-lists-of-objects
     public void deserializeJsonFile() throws FileNotFoundException {
-        BufferedReader bufferedReader = new BufferedReader(
-                new FileReader("src/main/resources/recentquotes.json"));
-        Gson gson = new Gson();
-        Type quoteListType = new TypeToken<ArrayList<Quote>>(){}.getType();
-        quotes = gson.fromJson(bufferedReader, quoteListType);
+
+            BufferedReader bufferedReader = new BufferedReader(
+                    new FileReader("src/main/resources/recentquotes.json"));
+            Gson gson = new Gson();
+            Type quoteListType = new TypeToken<ArrayList<Quote>>(){}.getType();
+            quotes = gson.fromJson(bufferedReader, quoteListType);
+
+
     }
 
 

@@ -19,14 +19,7 @@ public class Quote {
     public String getQuote(){
 
         try{
-            // Get starwars quote from starwars API
-            URL url = new URL("http://swquotesapi.digitaljedi.dk/api/SWQuote/RandomStarWarsQuote");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            BufferedReader internetReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-            Gson gson = new Gson();
-            Quote newQuote = gson.fromJson(internetReader, Quote.class);
-            return newQuote.starWarsQuote;
+            return fetchStarWarsQuote();
 
         }catch (IOException e){
             System.out.println("Error connecting to API");
@@ -34,13 +27,7 @@ public class Quote {
 
             // If we can't get a quote from the API, pull one from the file
             try {
-                BufferedReader bufferedReader = new BufferedReader(
-                        new FileReader("src/main/resources/recentquotes.json"));
-                Gson gson = new Gson();
-                quotes = gson.fromJson(bufferedReader, Quote[].class);
-                int randomIndex = (int) (Math.random() * quotes.length);
-                return quotes[randomIndex].toString();
-
+                return fetchRandomQuoteFromFile();
             } catch (FileNotFoundException e2) {
                 System.out.println("File not found");
                 e2.printStackTrace();
@@ -50,6 +37,36 @@ public class Quote {
         }
 
 
+    }
+
+    public String fetchStarWarsQuote() throws IOException {
+        // Get starwars quote from starwars API
+        URL url = new URL("http://swquotesapi.digitaljedi.dk/api/SWQuote/RandomStarWarsQuote");
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        BufferedReader internetReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+        Gson gson = new Gson();
+        Quote newQuote = gson.fromJson(internetReader, Quote.class);
+        // store sw quote in text for easier access later
+        newQuote.text = newQuote.starWarsQuote;
+
+        return newQuote.text;
+    }
+
+
+    public String fetchRandomQuoteFromFile() throws FileNotFoundException {
+        BufferedReader bufferedReader = new BufferedReader(
+                new FileReader("src/main/resources/recentquotes.json"));
+        Gson gson = new Gson();
+        quotes = gson.fromJson(bufferedReader, Quote[].class);
+        int randomIndex = (int) (Math.random() * quotes.length);
+        return quotes[randomIndex].toString();
+    }
+
+    public void saveQuote(){
+        // save to json file
+        // TODO: Should check if quote is already in the file
+//            gson.toJson(newQuote, new FileWriter("src/main/resources/recentquotes.json"));
     }
 
 

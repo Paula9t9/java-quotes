@@ -53,9 +53,10 @@ public class Quote {
         Quote newQuote = gson.fromJson(internetReader, Quote.class);
         connection.disconnect();
 
-        // store sw quote in text for easier access later
+        // store sw quote in text for easier access later, set starWarsQuote to null to avoid double save
         // TODO: split author off end of starwars quote and save it
         newQuote.text = newQuote.starWarsQuote;
+        newQuote.starWarsQuote = null;
         saveQuote("src/main/resources/recentquotes.json", newQuote);
 
         return newQuote.text;
@@ -73,6 +74,10 @@ public class Quote {
 
         try {
             deserializeJsonFile();
+            //Don't save if quote is already in the list
+            if (quotes.contains(newQuote)){
+                return;
+            }
             quotes.add(newQuote);
             // TODO: Should check if quote is already in the file
             Gson gson = new Gson();
@@ -94,8 +99,6 @@ public class Quote {
             Gson gson = new Gson();
             Type quoteListType = new TypeToken<ArrayList<Quote>>(){}.getType();
             quotes = gson.fromJson(bufferedReader, quoteListType);
-
-
     }
 
 
@@ -104,4 +107,26 @@ public class Quote {
         return String.format("%s" +
                 "\n%s", this.text, this.author);
     }
+
+
+    @Override
+    public boolean equals (Object o){
+
+        if(o == this){
+            return true;
+        }
+
+        if(!(o instanceof Quote)){
+            return  false;
+        }
+
+        Quote thatQuote = (Quote) o;
+
+        if(this.text == thatQuote.text && this.author == thatQuote.author){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
 }

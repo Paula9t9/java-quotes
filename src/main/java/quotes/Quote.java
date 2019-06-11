@@ -1,11 +1,15 @@
 package quotes;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.sun.javafx.binding.StringFormatter;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class Quote {
@@ -13,7 +17,7 @@ public class Quote {
     private String text;
     private String starWarsQuote;
 
-    private Quote[] quotes;
+    private List<Quote> quotes;
 
     // Gets a random quote from the swquotes API. If that fails, it will pull a random quote from out file
     public String getQuote(){
@@ -35,8 +39,6 @@ public class Quote {
                 return "Insanity: doing the same thing over and over again and expecting different results.";
             }
         }
-
-
     }
 
     public String fetchStarWarsQuote() throws IOException {
@@ -49,24 +51,39 @@ public class Quote {
         Quote newQuote = gson.fromJson(internetReader, Quote.class);
         // store sw quote in text for easier access later
         newQuote.text = newQuote.starWarsQuote;
+        saveQuote("src/main/resources/recentquotes.json", newQuote);
 
         return newQuote.text;
     }
 
 
     public String fetchRandomQuoteFromFile() throws FileNotFoundException {
+        deserializeJsonFile();
+        int randomIndex = (int) (Math.random() * quotes.size());
+        return quotes.get(randomIndex).toString();
+    }
+
+    // save to json file
+    public void saveQuote(String filepath, Quote newQuote){
+
+        try {
+            // TODO: Should check if quote is already in the file
+            Gson gson = new Gson();
+            gson.toJson(newQuote, new FileWriter(filepath));
+        } catch (IOException e) {
+            System.out.println("Error saving new quote to file");
+            e.printStackTrace();
+        }
+    }
+
+    // Stores quotes from file into quotes list
+    // Used List trick from https://futurestud.io/tutorials/gson-mapping-of-arrays-and-lists-of-objects
+    public void deserializeJsonFile() throws FileNotFoundException {
         BufferedReader bufferedReader = new BufferedReader(
                 new FileReader("src/main/resources/recentquotes.json"));
         Gson gson = new Gson();
-        quotes = gson.fromJson(bufferedReader, Quote[].class);
-        int randomIndex = (int) (Math.random() * quotes.length);
-        return quotes[randomIndex].toString();
-    }
-
-    public void saveQuote(){
-        // save to json file
-        // TODO: Should check if quote is already in the file
-//            gson.toJson(newQuote, new FileWriter("src/main/resources/recentquotes.json"));
+        Type quoteListType = new TypeToken<ArrayList<Quote>>(){}.getType();
+        quotes = gson.fromJson(bufferedReader, quoteListType);
     }
 
 
